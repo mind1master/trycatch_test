@@ -5,10 +5,10 @@ cov coverage:
 	coverage run test.py
 
 flake:
-	flake8 chess_challenge tests.py
+	flake8 chess_challenge.py test.py
 
 lint:
-	pylint chess_challenge tests.py
+	pylint chess_challenge.py test.py
 
 checkers: flake lint
 

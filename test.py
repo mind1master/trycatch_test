@@ -18,7 +18,7 @@ class Tests(unittest.TestCase):
             self.assertTrue(premutation in variants)
 
     def test_bigger(self):
-        variants = get_variants(4, 4, rooks=1, knights=4)
+        variants = get_variants(4, 4, rooks=2, knights=4)
         self.assertEqual(len(variants), 8)
 
         board = [
@@ -53,29 +53,28 @@ class Tests(unittest.TestCase):
 
         # rotate 90 degrees
         board_90 = [
-            ['K', ' ', ' '],
-            [' ', ' ', 'R'],
-            ['K', ' ', ' '],
+            [' ', ' ', 'K'],
+            ['R', ' ', ' '],
+            [' ', ' ', 'K'],
         ]
         self.assertEqual(premuatations[1], board_90)
 
         # rotate 180 degrees
         board_180 = [
-            [' ', ' ', 'K'],
-            ['R', ' ', ' '],
-            [' ', ' ', 'K'],
+            [' ', 'R', ' '],
+            [' ', ' ', ' '],
+            ['K', ' ', 'K'],
         ]
         self.assertEqual(premuatations[2], board_180)
 
         # rotate 270 degrees
         board_270 = [
-            [' ', 'R', ' '],
-            [' ', ' ', ' '],
-            ['K', ' ', 'K'],
+            ['K', ' ', ' '],
+            [' ', ' ', 'R'],
+            ['K', ' ', ' '],
         ]
         self.assertEqual(premuatations[3], board_270)
 
 
 if __name__ == '__main__':
     unittest.main()
-
