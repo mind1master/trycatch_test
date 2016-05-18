@@ -1,9 +1,34 @@
 import unittest
 
-from chess_challenge import get_variants, rotate_premutations, _place
+from chess_challenge import get_variants, _place
 
 
 class Tests(unittest.TestCase):
+
+    def _rotate_premutations(self, board):
+        '''
+        Returns 4 options of the board rotated 0, 90, 180, 260 degrees.
+        '''
+        results = [board]
+
+        # turn 90 degrees each time
+        for _ in range(3):
+            last_board = results[-1]
+            new_board = []
+            # j is a column index
+            for j in range(len(last_board[0])):
+                col = []  # column
+                # i is row index
+                for i in range(len(last_board)):
+                    col.append(last_board[i][j])
+
+                # for 90 degrees turned board
+                # column becomes a reversed row, so just append
+                new_board.append(list(reversed(col)))
+
+            results.append(new_board)
+
+        return results
 
     def test_basic(self):
         variants = get_variants(3, 3, kings=2, rooks=1)
@@ -14,7 +39,7 @@ class Tests(unittest.TestCase):
             [' ', ' ', ' '],
             [' ', 'R', ' '],
         ]
-        for premutation in rotate_premutations(board):
+        for premutation in self._rotate_premutations(board):
             self.assertTrue(premutation in variants)
 
     def test_bigger(self):
@@ -27,7 +52,7 @@ class Tests(unittest.TestCase):
             [' ', 'N', ' ', 'N'],
             [' ', ' ', 'R', ' '],
         ]
-        for premutation in rotate_premutations(board):
+        for premutation in self._rotate_premutations(board):
             self.assertTrue(premutation in variants)
 
         board = [
@@ -36,7 +61,7 @@ class Tests(unittest.TestCase):
             [' ', 'N', ' ', 'N'],
             ['R', ' ', ' ', ' '],
         ]
-        for premutation in rotate_premutations(board):
+        for premutation in self._rotate_premutations(board):
             self.assertTrue(premutation in variants)
 
     def test_rotate(self):
@@ -46,7 +71,7 @@ class Tests(unittest.TestCase):
             [' ', 'R', ' '],
         ]
 
-        premuatations = rotate_premutations(initial_board)
+        premuatations = self._rotate_premutations(initial_board)
 
         self.assertEqual(len(premuatations), 4)
         self.assertEqual(premuatations[0], initial_board)
@@ -81,7 +106,7 @@ class Tests(unittest.TestCase):
             [' ', ' ', ' '],
             [' ', ' ', ' '],
         ]
-        new_board = _place(board, 'Q', 0, 0)
+        new_board = _place(3, 3, board, 'Q', 0, 0)
         should_be = [
             ['Q', 'x', 'x'],
             ['x', 'x', ' '],
@@ -89,7 +114,7 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(new_board, should_be)
 
-        new_board = _place(board, 'Q', 1, 0)
+        new_board = _place(3, 3, board, 'Q', 1, 0)
         should_be = [
             ['x', 'x', ' '],
             ['Q', 'x', 'x'],
@@ -97,7 +122,7 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(new_board, should_be)
 
-        new_board = _place(board, 'Q', 2, 0)
+        new_board = _place(3, 3, board, 'Q', 2, 0)
         should_be = [
             ['x', ' ', 'x'],
             ['x', 'x', ' '],
@@ -105,7 +130,7 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(new_board, should_be)
 
-        new_board = _place(board, 'Q', 0, 1)
+        new_board = _place(3, 3, board, 'Q', 0, 1)
         should_be = [
             ['x', 'Q', 'x'],
             ['x', 'x', 'x'],
@@ -113,7 +138,7 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(new_board, should_be)
 
-        new_board = _place(board, 'Q', 1, 1)
+        new_board = _place(3, 3, board, 'Q', 1, 1)
         should_be = [
             ['x', 'x', 'x'],
             ['x', 'Q', 'x'],
@@ -121,7 +146,7 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(new_board, should_be)
 
-        new_board = _place(board, 'Q', 2, 1)
+        new_board = _place(3, 3, board, 'Q', 2, 1)
         should_be = [
             [' ', 'x', ' '],
             ['x', 'x', 'x'],
@@ -129,7 +154,7 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(new_board, should_be)
 
-        new_board = _place(board, 'Q', 0, 2)
+        new_board = _place(3, 3, board, 'Q', 0, 2)
         should_be = [
             ['x', 'x', 'Q'],
             [' ', 'x', 'x'],
@@ -137,7 +162,7 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(new_board, should_be)
 
-        new_board = _place(board, 'Q', 1, 2)
+        new_board = _place(3, 3, board, 'Q', 1, 2)
         should_be = [
             [' ', 'x', 'x'],
             ['x', 'x', 'Q'],
@@ -145,7 +170,7 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(new_board, should_be)
 
-        new_board = _place(board, 'Q', 2, 2)
+        new_board = _place(3, 3, board, 'Q', 2, 2)
         should_be = [
             ['x', ' ', 'x'],
             [' ', 'x', 'x'],
@@ -159,7 +184,7 @@ class Tests(unittest.TestCase):
             [' ', ' ', ' '],
             [' ', ' ', ' '],
         ]
-        new_board = _place(board, 'B', 0, 0)
+        new_board = _place(3, 3, board, 'B', 0, 0)
         should_be = [
             ['B', ' ', ' '],
             [' ', 'x', ' '],
@@ -167,7 +192,7 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(new_board, should_be)
 
-        new_board = _place(board, 'B', 1, 0)
+        new_board = _place(3, 3, board, 'B', 1, 0)
         should_be = [
             [' ', 'x', ' '],
             ['B', ' ', ' '],
@@ -175,7 +200,7 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(new_board, should_be)
 
-        new_board = _place(board, 'B', 2, 0)
+        new_board = _place(3, 3, board, 'B', 2, 0)
         should_be = [
             [' ', ' ', 'x'],
             [' ', 'x', ' '],
@@ -183,7 +208,7 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(new_board, should_be)
 
-        new_board = _place(board, 'B', 0, 1)
+        new_board = _place(3, 3, board, 'B', 0, 1)
         should_be = [
             [' ', 'B', ' '],
             ['x', ' ', 'x'],
@@ -191,7 +216,7 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(new_board, should_be)
 
-        new_board = _place(board, 'B', 1, 1)
+        new_board = _place(3, 3, board, 'B', 1, 1)
         should_be = [
             ['x', ' ', 'x'],
             [' ', 'B', ' '],
@@ -199,7 +224,7 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(new_board, should_be)
 
-        new_board = _place(board, 'B', 2, 1)
+        new_board = _place(3, 3, board, 'B', 2, 1)
         should_be = [
             [' ', ' ', ' '],
             ['x', ' ', 'x'],
@@ -207,7 +232,7 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(new_board, should_be)
 
-        new_board = _place(board, 'B', 0, 2)
+        new_board = _place(3, 3, board, 'B', 0, 2)
         should_be = [
             [' ', ' ', 'B'],
             [' ', 'x', ' '],
@@ -215,7 +240,7 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(new_board, should_be)
 
-        new_board = _place(board, 'B', 1, 2)
+        new_board = _place(3, 3, board, 'B', 1, 2)
         should_be = [
             [' ', 'x', ' '],
             [' ', ' ', 'B'],
@@ -223,7 +248,7 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(new_board, should_be)
 
-        new_board = _place(board, 'B', 2, 2)
+        new_board = _place(3, 3, board, 'B', 2, 2)
         should_be = [
             ['x', ' ', ' '],
             [' ', 'x', ' '],
@@ -237,7 +262,7 @@ class Tests(unittest.TestCase):
             [' ', ' ', ' '],
             [' ', ' ', ' '],
         ]
-        new_board = _place(board, 'R', 0, 0)
+        new_board = _place(3, 3, board, 'R', 0, 0)
         should_be = [
             ['R', 'x', 'x'],
             ['x', ' ', ' '],
@@ -245,7 +270,7 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(new_board, should_be)
 
-        new_board = _place(board, 'R', 1, 0)
+        new_board = _place(3, 3, board, 'R', 1, 0)
         should_be = [
             ['x', ' ', ' '],
             ['R', 'x', 'x'],
@@ -253,7 +278,7 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(new_board, should_be)
 
-        new_board = _place(board, 'R', 2, 0)
+        new_board = _place(3, 3, board, 'R', 2, 0)
         should_be = [
             ['x', ' ', ' '],
             ['x', ' ', ' '],
@@ -261,7 +286,7 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(new_board, should_be)
 
-        new_board = _place(board, 'R', 0, 1)
+        new_board = _place(3, 3, board, 'R', 0, 1)
         should_be = [
             ['x', 'R', 'x'],
             [' ', 'x', ' '],
@@ -269,7 +294,7 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(new_board, should_be)
 
-        new_board = _place(board, 'R', 1, 1)
+        new_board = _place(3, 3, board, 'R', 1, 1)
         should_be = [
             [' ', 'x', ' '],
             ['x', 'R', 'x'],
@@ -277,7 +302,7 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(new_board, should_be)
 
-        new_board = _place(board, 'R', 2, 1)
+        new_board = _place(3, 3, board, 'R', 2, 1)
         should_be = [
             [' ', 'x', ' '],
             [' ', 'x', ' '],
@@ -285,7 +310,7 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(new_board, should_be)
 
-        new_board = _place(board, 'R', 0, 2)
+        new_board = _place(3, 3, board, 'R', 0, 2)
         should_be = [
             ['x', 'x', 'R'],
             [' ', ' ', 'x'],
@@ -293,7 +318,7 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(new_board, should_be)
 
-        new_board = _place(board, 'R', 1, 2)
+        new_board = _place(3, 3, board, 'R', 1, 2)
         should_be = [
             [' ', ' ', 'x'],
             ['x', 'x', 'R'],
@@ -301,7 +326,7 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(new_board, should_be)
 
-        new_board = _place(board, 'R', 2, 2)
+        new_board = _place(3, 3, board, 'R', 2, 2)
         should_be = [
             [' ', ' ', 'x'],
             [' ', ' ', 'x'],
@@ -315,7 +340,7 @@ class Tests(unittest.TestCase):
             [' ', ' ', ' '],
             [' ', ' ', ' '],
         ]
-        new_board = _place(board, 'K', 0, 0)
+        new_board = _place(3, 3, board, 'K', 0, 0)
         should_be = [
             ['K', 'x', ' '],
             ['x', 'x', ' '],
@@ -323,7 +348,7 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(new_board, should_be)
 
-        new_board = _place(board, 'K', 1, 0)
+        new_board = _place(3, 3, board, 'K', 1, 0)
         should_be = [
             ['x', 'x', ' '],
             ['K', 'x', ' '],
@@ -331,7 +356,7 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(new_board, should_be)
 
-        new_board = _place(board, 'K', 2, 0)
+        new_board = _place(3, 3, board, 'K', 2, 0)
         should_be = [
             [' ', ' ', ' '],
             ['x', 'x', ' '],
@@ -339,7 +364,7 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(new_board, should_be)
 
-        new_board = _place(board, 'K', 0, 1)
+        new_board = _place(3, 3, board, 'K', 0, 1)
         should_be = [
             ['x', 'K', 'x'],
             ['x', 'x', 'x'],
@@ -347,7 +372,7 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(new_board, should_be)
 
-        new_board = _place(board, 'K', 1, 1)
+        new_board = _place(3, 3, board, 'K', 1, 1)
         should_be = [
             ['x', 'x', 'x'],
             ['x', 'K', 'x'],
@@ -355,7 +380,7 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(new_board, should_be)
 
-        new_board = _place(board, 'K', 2, 1)
+        new_board = _place(3, 3, board, 'K', 2, 1)
         should_be = [
             [' ', ' ', ' '],
             ['x', 'x', 'x'],
@@ -363,7 +388,7 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(new_board, should_be)
 
-        new_board = _place(board, 'K', 0, 2)
+        new_board = _place(3, 3, board, 'K', 0, 2)
         should_be = [
             [' ', 'x', 'K'],
             [' ', 'x', 'x'],
@@ -371,7 +396,7 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(new_board, should_be)
 
-        new_board = _place(board, 'K', 1, 2)
+        new_board = _place(3, 3, board, 'K', 1, 2)
         should_be = [
             [' ', 'x', 'x'],
             [' ', 'x', 'K'],
@@ -379,7 +404,7 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(new_board, should_be)
 
-        new_board = _place(board, 'K', 2, 2)
+        new_board = _place(3, 3, board, 'K', 2, 2)
         should_be = [
             [' ', ' ', ' '],
             [' ', 'x', 'x'],
@@ -393,7 +418,7 @@ class Tests(unittest.TestCase):
             [' ', ' ', ' '],
             [' ', ' ', ' '],
         ]
-        new_board = _place(board, 'N', 0, 0)
+        new_board = _place(3, 3, board, 'N', 0, 0)
         should_be = [
             ['N', ' ', ' '],
             [' ', ' ', 'x'],
@@ -401,7 +426,7 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(new_board, should_be)
 
-        new_board = _place(board, 'N', 1, 0)
+        new_board = _place(3, 3, board, 'N', 1, 0)
         should_be = [
             [' ', ' ', 'x'],
             ['N', ' ', ' '],
@@ -409,7 +434,7 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(new_board, should_be)
 
-        new_board = _place(board, 'N', 2, 0)
+        new_board = _place(3, 3, board, 'N', 2, 0)
         should_be = [
             [' ', 'x', ' '],
             [' ', ' ', 'x'],
@@ -417,7 +442,7 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(new_board, should_be)
 
-        new_board = _place(board, 'N', 0, 1)
+        new_board = _place(3, 3, board, 'N', 0, 1)
         should_be = [
             [' ', 'N', ' '],
             [' ', ' ', ' '],
@@ -425,7 +450,7 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(new_board, should_be)
 
-        new_board = _place(board, 'N', 1, 1)
+        new_board = _place(3, 3, board, 'N', 1, 1)
         should_be = [
             [' ', ' ', ' '],
             [' ', 'N', ' '],
@@ -435,7 +460,7 @@ class Tests(unittest.TestCase):
 
         # Further
 
-        new_board = _place(board, 'N', 2, 1)
+        new_board = _place(3, 3, board, 'N', 2, 1)
         should_be = [
             ['x', ' ', 'x'],
             [' ', ' ', ' '],
@@ -443,7 +468,7 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(new_board, should_be)
 
-        new_board = _place(board, 'N', 0, 2)
+        new_board = _place(3, 3, board, 'N', 0, 2)
         should_be = [
             [' ', ' ', 'N'],
             ['x', ' ', ' '],
@@ -451,7 +476,7 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(new_board, should_be)
 
-        new_board = _place(board, 'N', 1, 2)
+        new_board = _place(3, 3, board, 'N', 1, 2)
         should_be = [
             ['x', ' ', ' '],
             [' ', ' ', 'N'],
@@ -459,7 +484,7 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(new_board, should_be)
 
-        new_board = _place(board, 'N', 2, 2)
+        new_board = _place(3, 3, board, 'N', 2, 2)
         should_be = [
             [' ', 'x', ' '],
             ['x', ' ', ' '],
@@ -473,7 +498,7 @@ class Tests(unittest.TestCase):
             ['x', 'x', ' '],
             [' ', ' ', ' '],
         ]
-        new_board = _place(board, 'R', 0, 0)
+        new_board = _place(3, 3, board, 'R', 0, 0)
         should_be = None
         self.assertEqual(new_board, should_be)
 
@@ -482,7 +507,7 @@ class Tests(unittest.TestCase):
             ['x', 'x', ' '],
             [' ', ' ', ' '],
         ]
-        new_board = _place(board, 'R', 0, 1)
+        new_board = _place(3, 3, board, 'R', 0, 1)
         should_be = None
         self.assertEqual(new_board, should_be)
 
@@ -491,7 +516,7 @@ class Tests(unittest.TestCase):
             ['x', 'x', ' '],
             [' ', ' ', ' '],
         ]
-        new_board = _place(board, 'R', 0, 2)
+        new_board = _place(3, 3, board, 'R', 0, 2)
         should_be = None
         self.assertEqual(new_board, should_be)
 
@@ -500,7 +525,7 @@ class Tests(unittest.TestCase):
             ['x', 'x', ' '],
             [' ', ' ', ' '],
         ]
-        new_board = _place(board, 'R', 1, 2)
+        new_board = _place(3, 3, board, 'R', 1, 2)
         should_be = [
             ['K', 'x', 'x'],
             ['x', 'x', 'R'],

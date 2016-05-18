@@ -3,32 +3,6 @@ import time
 CACHE = set()
 
 
-def rotate_premutations(board):
-    '''
-    Returns 4 options of the board rotated 0, 90, 180, 260 degrees.
-    '''
-    results = [board]
-
-    # turn 90 degrees each time
-    for _ in range(3):
-        last_board = results[-1]
-        new_board = []
-        # j is a column index
-        for j in range(len(last_board[0])):
-            col = []  # column
-            # i is row index
-            for i in range(len(last_board)):
-                col.append(last_board[i][j])
-
-            # for 90 degrees turned board
-            # column becomes a reversed row, so just append
-            new_board.append(list(reversed(col)))
-
-        results.append(new_board)
-
-    return results
-
-
 def board_key(board):
     '''
     Returns a single string with all elements of the board.
@@ -40,19 +14,11 @@ def board_key(board):
     return ''.join(elements)
 
 
-def _place(board, figure, i, j):
+def _place(M, N, board, figure, i, j):
     if board[i][j] != ' ':
         # if cell is not empty
         return None
 
-    new_board = []
-    # copy
-    for row in board:
-        new_board.append(row[:])
-
-    height = len(board)
-    width = len(board[0])
-    valid_placement = True
     # (i,j) of cells that can be theatened and should be checked
     consider = []
 
@@ -72,40 +38,54 @@ def _place(board, figure, i, j):
         # queen
         # it goes out of bounds on purpose
         # such points are discarded later
+
+        m = min(M, N)
+        consider = [0] * (m * 4 + M + N)
+
         # straights
-        for y in range(height):
-            consider.append((y, j))
-        for x in range(width):
-            consider.append((i, x))
+        y, x = 0, 0
+        while y < M:
+            consider[y] = (y, j)
+            y += 1
+        while x < N:
+            consider[M+x] = (i, x)
+            x += 1
+
         # diagonals
-        for k in range(min(width, height)):
-            consider.append((i-k, j-k))
-        for k in range(min(width, height)):
-            consider.append((i+k, j+k))
-        for k in range(min(width, height)):
-            consider.append((i-k, j+k))
-        for k in range(min(width, height)):
-            consider.append((i+k, j-k))
+        k = 0
+        while k < m:
+            consider[M + N + k*4] = (i-k, j-k)
+            consider[M + N + k*4 + 1] = (i+k, j+k)
+            consider[M + N + k*4 + 2] = (i-k, j+k)
+            consider[M + N + k*4 + 3] = (i+k, j-k)
+            k += 1
     elif figure == 'R':
         # rook
+        # preallocate
+        consider = [0] * (M + N)
         # straights
-        for y in range(height):
-            consider.append((y, j))
-        for x in range(width):
-            consider.append((i, x))
+        y, x = 0, 0
+        while y < M:
+            consider[y] = (y, j)
+            y += 1
+        while x < N:
+            consider[M+x] = (i, x)
+            x += 1
     elif figure == 'B':
         # bishop
-        # it goes out of bounds on purpose
-        # such points are discarded later
         # diagonals
-        for k in range(min(width, height)):
-            consider.append((i-k, j-k))
-        for k in range(min(width, height)):
-            consider.append((i+k, j+k))
-        for k in range(min(width, height)):
-            consider.append((i-k, j+k))
-        for k in range(min(width, height)):
-            consider.append((i+k, j-k))
+        # preallocate
+        m = min(M, N)
+        consider = [0] * (m * 4)
+
+        k = 0
+        while k < m:
+            consider[k*4] = (i-k, j-k)
+            consider[k*4 + 1] = (i+k, j+k)
+            consider[k*4 + 2] = (i-k, j+k)
+            consider[k*4 + 3] = (i+k, j-k)
+            k += 1
+
     elif figure == 'N':
         # knight
         consider = [
@@ -119,49 +99,65 @@ def _place(board, figure, i, j):
             (i+1, j-2),
         ]
 
+
+    valid_placement = True
     # check all cells that would be influenced
     for y, x in consider:
-        if y < 0 or y >= height or x < 0 or x >= width:
-            # out of bounds
+        if y < 0 or y >= M or x < 0 or x >= N:
+            # out of bounds, don't care
             continue
-        if not board[y][x] in [' ', 'x']:
+        if board[y][x] not in [' ', 'x']:
             # cell is taken means we can't use (i,j)
             valid_placement = False
             break
 
-        new_board[y][x] = 'x'  # mark as theatened
-
     if not valid_placement:
         return None
+
+    new_board = [0] * M
+    # copy
+    row = 0
+    while row < M:
+        new_board[row] = board[row][:]
+        row += 1
+
+    # fill the new board
+    for y, x in consider:
+        if y < 0 or y >= M or x < 0 or x >= N:
+            # out of bounds
+            continue
+        new_board[y][x] = 'x'  # mark as theatened
 
     new_board[i][j] = figure
     return new_board
 
 
-def _reccur(board, figures_left):
+def _reccur(M, N, board, figures_left):
     if not figures_left:
-        ret_board = []
-        for row in board:
-            ret_row = []
-            for el in row:
-                if el in [' ', 'x']:
-                    ret_row.append(' ')
-                else:
-                    ret_row.append(el)
-            ret_board.append(ret_row)
-        return [ret_board]
+        # return
+        i = 0
+        while i < M:
+            j = 0
+            while j < N:
+                if board[i][j] == 'x':
+                    board[i][j] = ' '
+                j += 1
+            i += 1
+        return [board]
 
-    m = len(board)
-    n = len(board[0])
 
     results = []
     figure = figures_left[0]
 
-    for i in range(m):
-        for j in range(n):
+    i = 0
+    while i < M:
+        j = 0
+        while j < N:
             if board[i][j] != ' ':
+                j += 1
                 continue
-            new_board = _place(board, figure, i, j)
+            new_board = _place(M, N, board, figure, i, j)
+            j += 1
             if not new_board:
                 continue
 
@@ -172,9 +168,12 @@ def _reccur(board, figures_left):
             CACHE.add(key)
 
             results += _reccur(
+                M, N,
                 new_board,
                 figures_left[1:]
             )
+        i += 1
+
 
     return results
 
@@ -197,7 +196,7 @@ def get_variants(M, N, kings=0, queens=0, bishops=0, rooks=0, knights=0):
     figures += ['K'] * kings
     figures += ['N'] * knights
 
-    results = _reccur(board, figures)
+    results = _reccur(M, N, board, figures)
 
     return results
 
