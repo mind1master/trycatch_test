@@ -165,10 +165,11 @@ def _reccur(board, figures_left):
             if not new_board:
                 continue
 
-            if board_key(new_board) in CACHE:
+            key = board_key(new_board)
+            if key in CACHE:
                 # aleady had it
                 continue
-            CACHE.add(board_key(new_board))
+            CACHE.add(key)
 
             results += _reccur(
                 new_board,
@@ -207,6 +208,6 @@ if __name__ == '__main__':
     variants = get_variants(7, 7, kings=2, queens=2, bishops=2, knights=1)
     print(
         'Got {} variants in {} secs'.format(
-            len(variants, time.time() - start_t)
+            len(variants), time.time() - start_t
         )
     )
