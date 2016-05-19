@@ -3,6 +3,7 @@ test:
 
 cov coverage:
 	coverage run test.py
+	coverage html
 
 flake:
 	flake8 chess_challenge.py test.py

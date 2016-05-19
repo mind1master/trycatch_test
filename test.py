@@ -30,7 +30,7 @@ class Tests(unittest.TestCase):
 
         return results
 
-    def test_basic(self):
+    def test_kings_rook(self):
         variants = get_variants(3, 3, kings=2, rooks=1)
         self.assertEqual(len(variants), 4)
 
@@ -42,7 +42,43 @@ class Tests(unittest.TestCase):
         for premutation in self._rotate_premutations(board):
             self.assertTrue(premutation in variants)
 
-    def test_bigger(self):
+    def test_queen_bishop(self):
+        variants = get_variants(3, 3, queens=1, bishops=1)
+        self.assertEqual(len(variants), 16)
+
+        board = [
+            ['Q', ' ', ' '],
+            [' ', ' ', ' '],
+            [' ', 'B', ' '],
+        ]
+        for premutation in self._rotate_premutations(board):
+            self.assertTrue(premutation in variants)
+
+        board = [
+            ['Q', ' ', ' '],
+            [' ', ' ', 'B'],
+            [' ', ' ', ' '],
+        ]
+        for premutation in self._rotate_premutations(board):
+            self.assertTrue(premutation in variants)
+
+        board = [
+            [' ', 'Q', ' '],
+            [' ', ' ', ' '],
+            ['B', ' ', ' '],
+        ]
+        for premutation in self._rotate_premutations(board):
+            self.assertTrue(premutation in variants)
+
+        board = [
+            [' ', 'Q', ' '],
+            [' ', ' ', ' '],
+            [' ', ' ', 'B'],
+        ]
+        for premutation in self._rotate_premutations(board):
+            self.assertTrue(premutation in variants)
+
+    def test_rooks_knights(self):
         variants = get_variants(4, 4, rooks=2, knights=4)
         self.assertEqual(len(variants), 8)
 

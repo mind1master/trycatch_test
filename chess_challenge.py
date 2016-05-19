@@ -1,12 +1,20 @@
 import time
+import sys
+
+
+# support python 2 and 3
+if sys.version[0] == "3":
+    raw_input = input
+
 
 CACHE = set()
 
 
-def board_key(board):
+def _board_key(board):
     '''
     Returns a single string with all elements of the board.
     Used to store the board in set.
+    (board itself is mutable so can't be stored in set)
     '''
     elements = []
     for row in board:
@@ -15,6 +23,10 @@ def board_key(board):
 
 
 def _place(M, N, board, figure, i, j):
+    '''
+    Places a `figure` at position i,j.
+    Returns new board or None if placement is not allowed.
+    '''
     if board[i][j] != ' ':
         # if cell is not empty
         return None
@@ -99,7 +111,6 @@ def _place(M, N, board, figure, i, j):
             (i+1, j-2),
         ]
 
-
     valid_placement = True
     # check all cells that would be influenced
     for y, x in consider:
@@ -133,8 +144,14 @@ def _place(M, N, board, figure, i, j):
 
 
 def _reccur(M, N, board, figures_left):
+    '''
+    This function is called recurrently.
+    Each next call has smaller figures_left then it's caller.
+    Returns the final results for given (semi)populated board and figures.
+    '''
     if not figures_left:
-        # return
+        # all figures are placed, means we have a final variant
+        # replace `x` with spaces
         i = 0
         while i < M:
             j = 0
@@ -145,35 +162,43 @@ def _reccur(M, N, board, figures_left):
             i += 1
         return [board]
 
-
     results = []
+    # take first figure from set
+    # we will try to put it somewhere
     figure = figures_left[0]
 
     i = 0
+    # iterate over a board
     while i < M:
         j = 0
         while j < N:
+            # check if vacant
             if board[i][j] != ' ':
                 j += 1
                 continue
+            # try place the figure
             new_board = _place(M, N, board, figure, i, j)
             j += 1
+            # check if placement was valid
             if not new_board:
                 continue
 
-            key = board_key(new_board)
+            # check cache to reduce solution space
+            key = _board_key(new_board)
             if key in CACHE:
-                # aleady had it
+                # aleady had this board configuration
                 continue
             CACHE.add(key)
 
+            # go to the next recursion level
+            # there, the next figure will be attempted to be placed
+            # and so on
             results += _reccur(
                 M, N,
                 new_board,
                 figures_left[1:]
             )
         i += 1
-
 
     return results
 
@@ -196,17 +221,45 @@ def get_variants(M, N, kings=0, queens=0, bishops=0, rooks=0, knights=0):
     figures += ['K'] * kings
     figures += ['N'] * knights
 
+    # start recursion
     results = _reccur(M, N, board, figures)
 
     return results
 
 
-if __name__ == '__main__':
-    # TODO: add proper input/output
+def main():
+    M = int(raw_input('Enter M: '))
+    assert M > 0, 'M must be positive'
+    N = int(raw_input('Enter N: '))
+    assert N > 0, 'N must be positive'
+    kings = int(raw_input('Enter kings number: '))
+    assert kings >= 0, 'kings number must be not negative'
+    queens = int(raw_input('Enter queens number: '))
+    assert queens >= 0, 'queens number must be not negative'
+    bishops = int(raw_input('Enter bishops number: '))
+    assert bishops >= 0, 'bishops number must be not negative'
+    rooks = int(raw_input('Enter rooks number: '))
+    assert rooks >= 0, 'rooks number must be not negative'
+    knights = int(raw_input('Enter knights number: '))
+    assert knights >= 0, 'knights number must be not negative'
+
+    full_output = raw_input('Do you want all variants in the output? (y/n): ')
+    assert full_output in ['y', 'n'], 'only `y` or `n`'
+
     start_t = time.time()
-    variants = get_variants(7, 7, kings=2, queens=2, bishops=2, knights=1)
+    variants = get_variants(M, N, kings, queens, bishops, rooks, knights)
+    if full_output == 'y':
+        for i, board in enumerate(variants):
+            print('Board {}'.format(i))
+            for row in board:
+                print(row)
+
+            print(' ')
     print(
         'Got {} variants in {} secs'.format(
             len(variants), time.time() - start_t
         )
     )
+
+if __name__ == '__main__':
+    main()
