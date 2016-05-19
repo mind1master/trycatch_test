@@ -3,6 +3,7 @@ test:
 
 cov coverage:
 	coverage run test.py
+	coverage report
 	coverage html
 
 flake:

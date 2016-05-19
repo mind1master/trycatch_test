@@ -1,6 +1,6 @@
 import unittest
 
-from chess_challenge import get_variants, _place
+from chess_challenge import get_variants, _place, main
 
 
 class Tests(unittest.TestCase):
@@ -580,6 +580,11 @@ class Tests(unittest.TestCase):
             [' ', ' ', 'x'],
         ]
         self.assertEqual(new_board, should_be)
+
+    def test_main(self):
+        """Test main method."""
+        results_len = main(3, 3, kings=2, rooks=1, full_output=True)
+        self.assertEqual(results_len, 4)
 
 
 if __name__ == '__main__':

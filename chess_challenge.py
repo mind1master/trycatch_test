@@ -1,15 +1,7 @@
 """Module to solve chess challenge."""
 
 import time
-import sys
-
-
-# support python 2 and 3
-if sys.version[0] == "3":
-    raw_input = input
-
-
-CACHE = set()
+import argparse
 
 
 def _board_key(board):
@@ -147,7 +139,7 @@ def _place(M, N, board, figure, i, j):
     return new_board
 
 
-def _reccur(M, N, board, figures_left):
+def _reccur(M, N, board, figures_left, cache):
     """
     Called recursively and puts one figure at each recursion level.
 
@@ -190,10 +182,10 @@ def _reccur(M, N, board, figures_left):
 
             # check cache to reduce solution space
             key = _board_key(new_board)
-            if key in CACHE:
+            if key in cache:
                 # aleady had this board configuration
                 continue
-            CACHE.add(key)
+            cache.add(key)
 
             # go to the next recursion level
             # there, the next figure will be attempted to be placed
@@ -201,7 +193,8 @@ def _reccur(M, N, board, figures_left):
             results += _reccur(
                 M, N,
                 new_board,
-                figures_left[1:]
+                figures_left[1:],
+                cache
             )
         i += 1
 
@@ -214,6 +207,7 @@ def get_variants(M, N, kings=0, queens=0, bishops=0, rooks=0, knights=0):
 
     Returns a list of boards.
     """
+    cache = set()
     # construct board
     board = []
     for _ in range(M):
@@ -228,34 +222,17 @@ def get_variants(M, N, kings=0, queens=0, bishops=0, rooks=0, knights=0):
     figures += ['N'] * knights
 
     # start recursion
-    results = _reccur(M, N, board, figures)
+    results = _reccur(M, N, board, figures, cache)
 
     return results
 
 
-def main():
+def main(M, N, kings=0, queens=0, bishops=0, rooks=0, knights=0,
+         full_output=True):
     """Interface to the command line."""
-    M = int(raw_input('Enter M: '))
-    assert M > 0, 'M must be positive'
-    N = int(raw_input('Enter N: '))
-    assert N > 0, 'N must be positive'
-    kings = int(raw_input('Enter kings number: '))
-    assert kings >= 0, 'kings number must be not negative'
-    queens = int(raw_input('Enter queens number: '))
-    assert queens >= 0, 'queens number must be not negative'
-    bishops = int(raw_input('Enter bishops number: '))
-    assert bishops >= 0, 'bishops number must be not negative'
-    rooks = int(raw_input('Enter rooks number: '))
-    assert rooks >= 0, 'rooks number must be not negative'
-    knights = int(raw_input('Enter knights number: '))
-    assert knights >= 0, 'knights number must be not negative'
-
-    full_output = raw_input('Do you want all variants in the output? (y/n): ')
-    assert full_output in ['y', 'n'], 'only `y` or `n`'
-
     start_t = time.time()
     variants = get_variants(M, N, kings, queens, bishops, rooks, knights)
-    if full_output == 'y':
+    if full_output:
         for i, board in enumerate(variants):
             print('Board {}'.format(i))
             for row in board:
@@ -267,6 +244,20 @@ def main():
             len(variants), time.time() - start_t
         )
     )
+    return len(variants)
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(description='Chess challenge.')
+    parser.add_argument('M', type=int)
+    parser.add_argument('N', type=int)
+    parser.add_argument('kings', type=int)
+    parser.add_argument('queens', type=int)
+    parser.add_argument('bishops', type=int)
+    parser.add_argument('rooks', type=int)
+    parser.add_argument('knights', type=int)
+    parser.add_argument('--compact', action="store_true")
+    args = parser.parse_args()
+    main(
+        args.M, args.N, args.kings, args.queens, args.bishops,
+        args.rooks, args.knights, not args.compact
+    )
