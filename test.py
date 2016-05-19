@@ -6,9 +6,11 @@ from chess_challenge import get_variants, _place
 class Tests(unittest.TestCase):
 
     def _rotate_premutations(self, board):
-        '''
-        Returns 4 options of the board rotated 0, 90, 180, 260 degrees.
-        '''
+        """
+        Return 4 options of the board.
+
+        Rotated 0, 90, 180, 260 degrees.
+        """
         results = [board]
 
         # turn 90 degrees each time
@@ -31,6 +33,7 @@ class Tests(unittest.TestCase):
         return results
 
     def test_kings_rook(self):
+        """Test from challenge."""
         variants = get_variants(3, 3, kings=2, rooks=1)
         self.assertEqual(len(variants), 4)
 
@@ -43,6 +46,7 @@ class Tests(unittest.TestCase):
             self.assertTrue(premutation in variants)
 
     def test_queen_bishop(self):
+        """Test queen and bishop."""
         variants = get_variants(3, 3, queens=1, bishops=1)
         self.assertEqual(len(variants), 16)
 
@@ -79,6 +83,7 @@ class Tests(unittest.TestCase):
             self.assertTrue(premutation in variants)
 
     def test_rooks_knights(self):
+        """Test from challenge."""
         variants = get_variants(4, 4, rooks=2, knights=4)
         self.assertEqual(len(variants), 8)
 
@@ -101,6 +106,7 @@ class Tests(unittest.TestCase):
             self.assertTrue(premutation in variants)
 
     def test_rotate(self):
+        """Test utility rotation function."""
         initial_board = [
             ['K', ' ', 'K'],
             [' ', ' ', ' '],
@@ -136,7 +142,8 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(premuatations[3], board_270)
 
-    def test_place_Q(self):
+    def test_place_queen(self):
+        """Test queen placement."""
         board = [
             [' ', ' ', ' '],
             [' ', ' ', ' '],
@@ -214,7 +221,8 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(new_board, should_be)
 
-    def test_place_B(self):
+    def test_place_bishop(self):
+        """Test bishop placement."""
         board = [
             [' ', ' ', ' '],
             [' ', ' ', ' '],
@@ -292,7 +300,8 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(new_board, should_be)
 
-    def test_place_R(self):
+    def test_place_rook(self):
+        """Test rook placement."""
         board = [
             [' ', ' ', ' '],
             [' ', ' ', ' '],
@@ -370,7 +379,8 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(new_board, should_be)
 
-    def test_place_K(self):
+    def test_place_king(self):
+        """Test king placement."""
         board = [
             [' ', ' ', ' '],
             [' ', ' ', ' '],
@@ -448,7 +458,8 @@ class Tests(unittest.TestCase):
         ]
         self.assertEqual(new_board, should_be)
 
-    def test_place_N(self):
+    def test_place_knight(self):
+        """Test knight placement."""
         board = [
             [' ', ' ', ' '],
             [' ', ' ', ' '],
@@ -529,6 +540,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(new_board, should_be)
 
     def test_place_combined(self):
+        """Test multiple placement."""
         board = [
             ['K', 'x', ' '],
             ['x', 'x', ' '],
@@ -568,6 +580,7 @@ class Tests(unittest.TestCase):
             [' ', ' ', 'x'],
         ]
         self.assertEqual(new_board, should_be)
+
 
 if __name__ == '__main__':
     unittest.main()
