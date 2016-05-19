@@ -1,3 +1,5 @@
+"""Module to solve chess challenge."""
+
 import time
 import sys
 
@@ -11,11 +13,12 @@ CACHE = set()
 
 
 def _board_key(board):
-    '''
-    Returns a single string with all elements of the board.
+    """
     Used to store the board in set.
+
+    Return a single string with all elements of the board.
     (board itself is mutable so can't be stored in set)
-    '''
+    """
     elements = []
     for row in board:
         elements += row
@@ -23,10 +26,11 @@ def _board_key(board):
 
 
 def _place(M, N, board, figure, i, j):
-    '''
-    Places a `figure` at position i,j.
-    Returns new board or None if placement is not allowed.
-    '''
+    """
+    Place a `figure` at position i,j.
+
+    Return a new board or None if placement is not allowed.
+    """
     if board[i][j] != ' ':
         # if cell is not empty
         return None
@@ -144,11 +148,12 @@ def _place(M, N, board, figure, i, j):
 
 
 def _reccur(M, N, board, figures_left):
-    '''
-    This function is called recurrently.
+    """
+    Called recursively and puts one figure at each recursion level.
+
     Each next call has smaller figures_left then it's caller.
     Returns the final results for given (semi)populated board and figures.
-    '''
+    """
     if not figures_left:
         # all figures are placed, means we have a final variant
         # replace `x` with spaces
@@ -204,10 +209,11 @@ def _reccur(M, N, board, figures_left):
 
 
 def get_variants(M, N, kings=0, queens=0, bishops=0, rooks=0, knights=0):
-    '''
-    Solves the given task.
+    """
+    Solve the given task.
+
     Returns a list of boards.
-    '''
+    """
     # construct board
     board = []
     for _ in range(M):
@@ -228,6 +234,7 @@ def get_variants(M, N, kings=0, queens=0, bishops=0, rooks=0, knights=0):
 
 
 def main():
+    """Interface to the command line."""
     M = int(raw_input('Enter M: '))
     assert M > 0, 'M must be positive'
     N = int(raw_input('Enter N: '))
