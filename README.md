@@ -2,7 +2,8 @@
 
 - Run program:
 
-    `make run`
+    `usage: chess_challenge.py [-h] [--compact]
+                          M N kings queens bishops rooks knights`
 
 - Installing coverage/pylint/flake8:
  
