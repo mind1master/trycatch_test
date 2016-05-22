@@ -1,6 +1,27 @@
 import unittest
 
-from chess_challenge import get_variants, _place, main
+from chess_challenge import (get_variants, main, Queen, King, Bishop,
+                             Rook, Knight, Board)
+
+
+PIECE_DICT = {
+    'Q': Queen,
+    'K': King,
+    'R': Rook,
+    'B': Bishop,
+    'N': Knight,
+}
+
+
+def _place(M, N, board_list, piece_symbol, i, j):
+    """Legacy function to make tests work with new class-based approach"""
+    piece = PIECE_DICT[piece_symbol]()
+    board = Board(M, N)
+    board._board = board_list
+    new_board = board.place(piece, i, j)
+    if not new_board:
+        return None
+    return new_board._board
 
 
 class Tests(unittest.TestCase):

@@ -4,35 +4,28 @@ import time
 import argparse
 
 
-def _board_key(board):
-    """
-    Used to store the board in set.
+class Piece:
+    """Base class for all pieces."""
 
-    Return a single string with all elements of the board.
-    (board itself is mutable so can't be stored in set)
-    """
-    elements = []
-    for row in board:
-        elements += row
-    return ''.join(elements)
+    symbol = ''
+    _positions = []  # to avoid re-allocations
+
+    def affected_positions(self, M, N, i, j):
+        """
+        Method to get affected positions if pieced placed at (i, j).
+
+        Should return list of (y, x) affected positions.
+        """
+        raise NotImplementedError
 
 
-def _place(M, N, board, figure, i, j):
-    """
-    Place a `figure` at position i,j.
+class King(Piece):
+    """King"""
 
-    Return a new board or None if placement is not allowed.
-    """
-    if board[i][j] != ' ':
-        # if cell is not empty
-        return None
+    symbol = 'K'
 
-    # (i,j) of cells that can be theatened and should be checked
-    consider = []
-
-    if figure == 'K':
-        # king
-        consider = [
+    def affected_positions(self, M, N, i, j):
+        self._positions = [
             (i+1, j),
             (i-1, j),
             (i, j+1),
@@ -42,61 +35,90 @@ def _place(M, N, board, figure, i, j):
             (i+1, j-1),
             (i-1, j-1),
         ]
-    elif figure == 'Q':
-        # queen
+
+        return self._positions
+
+
+class Queen(Piece):
+    """Queen"""
+
+    symbol = 'Q'
+
+    def affected_positions(self, M, N, i, j):
         # it goes out of bounds on purpose
         # such points are discarded later
 
-        m = min(M, N)
-        consider = [0] * (m * 4 + M + N)
+        smaller_side = min(M, N)
+        if not self._positions:
+            self._positions = [0] * (smaller_side * 4 + M + N)
 
         # straights
-        y, x = 0, 0
-        while y < M:
-            consider[y] = (y, j)
-            y += 1
-        while x < N:
-            consider[M+x] = (i, x)
-            x += 1
+        for y in range(M):
+            self._positions[y] = (y, j)
+        for x in range(N):
+            self._positions[M+x] = (i, x)
 
         # diagonals
-        k = 0
-        while k < m:
-            consider[M + N + k*4] = (i-k, j-k)
-            consider[M + N + k*4 + 1] = (i+k, j+k)
-            consider[M + N + k*4 + 2] = (i-k, j+k)
-            consider[M + N + k*4 + 3] = (i+k, j-k)
-            k += 1
-    elif figure == 'R':
-        # rook
-        # preallocate
-        consider = [0] * (M + N)
+        for k in range(smaller_side):
+            self._positions[M + N + k*4] = (i-k, j-k)
+            self._positions[M + N + k*4 + 1] = (i+k, j+k)
+            self._positions[M + N + k*4 + 2] = (i-k, j+k)
+            self._positions[M + N + k*4 + 3] = (i+k, j-k)
+
+        return self._positions
+
+
+class Rook(Piece):
+    """Rook"""
+
+    symbol = 'R'
+
+    def affected_positions(self, M, N, i, j):
+        # it goes out of bounds on purpose
+        # such points are discarded later
+
+        if not self._positions:
+            self._positions = [0] * (M + N)
+
         # straights
-        y, x = 0, 0
-        while y < M:
-            consider[y] = (y, j)
-            y += 1
-        while x < N:
-            consider[M+x] = (i, x)
-            x += 1
-    elif figure == 'B':
-        # bishop
+        for y in range(M):
+            self._positions[y] = (y, j)
+        for x in range(N):
+            self._positions[M+x] = (i, x)
+
+        return self._positions
+
+
+class Bishop(Piece):
+    """Bishop"""
+
+    symbol = 'B'
+
+    def affected_positions(self, M, N, i, j):
+        # it goes out of bounds on purpose
+        # such points are discarded later
+
+        smaller_side = min(M, N)
+        if not self._positions:
+            self._positions = [0] * (smaller_side * 4)
+
         # diagonals
-        # preallocate
-        m = min(M, N)
-        consider = [0] * (m * 4)
+        for k in range(smaller_side):
+            self._positions[k*4] = (i-k, j-k)
+            self._positions[k*4 + 1] = (i+k, j+k)
+            self._positions[k*4 + 2] = (i-k, j+k)
+            self._positions[k*4 + 3] = (i+k, j-k)
 
-        k = 0
-        while k < m:
-            consider[k*4] = (i-k, j-k)
-            consider[k*4 + 1] = (i+k, j+k)
-            consider[k*4 + 2] = (i-k, j+k)
-            consider[k*4 + 3] = (i+k, j-k)
-            k += 1
+        return self._positions
 
-    elif figure == 'N':
-        # knight
-        consider = [
+
+class Knight(Piece):
+    """Knight"""
+
+    symbol = 'N'
+
+    def affected_positions(self, M, N, i, j):
+        self._positions = [
             (i-2, j-1),
             (i-1, j-2),
             (i+2, j+1),
@@ -106,97 +128,143 @@ def _place(M, N, board, figure, i, j):
             (i+2, j-1),
             (i+1, j-2),
         ]
-
-    valid_placement = True
-    # check all cells that would be influenced
-    for y, x in consider:
-        if y < 0 or y >= M or x < 0 or x >= N:
-            # out of bounds, don't care
-            continue
-        if board[y][x] not in [' ', 'x']:
-            # cell is taken means we can't use (i,j)
-            valid_placement = False
-            break
-
-    if not valid_placement:
-        return None
-
-    new_board = [0] * M
-    # copy
-    row = 0
-    while row < M:
-        new_board[row] = board[row][:]
-        row += 1
-
-    # fill the new board
-    for y, x in consider:
-        if y < 0 or y >= M or x < 0 or x >= N:
-            # out of bounds
-            continue
-        new_board[y][x] = 'x'  # mark as theatened
-
-    new_board[i][j] = figure
-    return new_board
+        return self._positions
 
 
-def _reccur(M, N, board, figures_left, cache):
+class Board:
+    """Game board"""
+
+    def __init__(self, M, N):
+        """Init an empty MxN board."""
+        self.M = M
+        self.N = N
+        self._board = [0] * M
+        for i in range(M):
+            self._board[i] = [' '] * N
+
+        self._key = None
+
+    @property
+    def key(self):
+        """
+        Used to store the board in set.
+
+        Return a single string with all elements of the board.
+        (board itself is mutable so can't be stored in set)
+        """
+        if not self._key:
+            elements = []
+            for row in self._board:
+                elements += row
+            self._key = ''.join(elements)
+        return self._key
+
+    def set(self, i, j, value):
+        self._board[i][j] = value
+
+    def place(self, piece, i, j):
+        """
+        Try to place a piece at (i,j).
+
+        Should return new board or None, if placement is not valid.
+        """
+        if self._board[i][j] != ' ':
+            # if cell is not empty
+            return None
+
+        # get all cells that would be affected
+        affected = piece.affected_positions(self.M, self.N, i, j)
+
+        # filter out-of-bounds
+        affected = [
+            (y, x)
+            for (y, x) in affected
+            if y >= 0 and y < self.M and x >= 0 and x < self.N
+        ]
+
+        valid_placement = True
+
+        for y, x in affected:
+            # check if empty
+            if self._board[y][x] not in [' ', 'x']:
+                # cell is taken means we can't use (i,j)
+                valid_placement = False
+                break
+
+        if not valid_placement:
+            return None
+
+        new_board = Board(self.M, self.N)
+        for y in range(self.M):
+            for x in range(self.N):
+                if (y, x) in affected:
+                    new_board.set(y, x, 'x')
+                else:
+                    new_board.set(y, x, self._board[y][x])
+
+        new_board.set(i, j, piece.symbol)
+
+        return new_board
+
+    def is_empty(self, i, j):
+        """Check if position is empty"""
+        return self._board[i][j] == ' '
+
+    def as_list(self):
+        """Board as a list with 'x' removed."""
+        for i in range(self.M):
+            for j in range(self.N):
+                if self._board[i][j] == 'x':
+                    self._board[i][j] = ' '
+        return self._board
+
+
+def _reccur(M, N, board, pieces_left, cache):
     """
-    Called recursively and puts one figure at each recursion level.
+    Called recursively and puts one piece at each recursion level.
 
-    Each next call has smaller figures_left then it's caller.
-    Returns the final results for given (semi)populated board and figures.
+    Each next call has smaller pieces_left then it's caller.
+    Returns the final results for given (semi)populated board and pieces.
     """
-    if not figures_left:
-        # all figures are placed, means we have a final variant
+    if not pieces_left:
+        # all pieces are placed, means we have a final variant
         # replace `x` with spaces
-        i = 0
-        while i < M:
-            j = 0
-            while j < N:
-                if board[i][j] == 'x':
-                    board[i][j] = ' '
-                j += 1
-            i += 1
-        return [board]
+        return [board.as_list()]
 
     results = []
-    # take first figure from set
+    # take first piece from set
     # we will try to put it somewhere
-    figure = figures_left[0]
+    piece = pieces_left[0]
 
-    i = 0
     # iterate over a board
-    while i < M:
-        j = 0
-        while j < N:
+    for i in range(M):
+        for j in range(N):
             # check if vacant
-            if board[i][j] != ' ':
-                j += 1
+            if not board.is_empty(i, j):
                 continue
-            # try place the figure
-            new_board = _place(M, N, board, figure, i, j)
-            j += 1
+
+            # try place the piece
+            new_board = board.place(piece, i, j)
+
             # check if placement was valid
             if not new_board:
                 continue
 
             # check cache to reduce solution space
-            key = _board_key(new_board)
-            if key in cache:
+            if new_board.key in cache:
                 # aleady had this board configuration
                 continue
-            cache.add(key)
+            cache.add(new_board.key)
 
             # go to the next recursion level
-            # there, the next figure will be attempted to be placed
+            # there, the next piece will be attempted to be placed
             # and so on
             results += _reccur(
                 M, N,
                 new_board,
-                figures_left[1:],
+                pieces_left[1:],
                 cache
             )
-        i += 1
 
     return results
 
@@ -209,20 +277,18 @@ def get_variants(M, N, kings=0, queens=0, bishops=0, rooks=0, knights=0):
     """
     cache = set()
     # construct board
-    board = []
-    for _ in range(M):
-        board.append([' '] * N)
+    board = Board(M, N)
 
-    # put together figures
-    figures = []
-    figures += ['Q'] * queens
-    figures += ['B'] * bishops
-    figures += ['R'] * rooks
-    figures += ['K'] * kings
-    figures += ['N'] * knights
+    # put together pieces
+    pieces = []
+    pieces += [Queen() for _ in range(queens)]
+    pieces += [Bishop() for _ in range(bishops)]
+    pieces += [Rook() for _ in range(rooks)]
+    pieces += [King() for _ in range(kings)]
+    pieces += [Knight() for _ in range(knights)]
 
     # start recursion
-    results = _reccur(M, N, board, figures, cache)
+    results = _reccur(M, N, board, pieces, cache)
 
     return results
 
